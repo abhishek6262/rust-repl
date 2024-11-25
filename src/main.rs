@@ -6,7 +6,7 @@ use std::io::Write;
 use std::process::Command;
 
 fn main() {
-    // Clear anything present in the console
+    // Clear anything in the existing console
     Command::new("clear").status().unwrap();
 
     let repl = Repl::new();
