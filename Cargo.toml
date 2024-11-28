@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 tempfile = "3.14.0"
 regex = "1.11.1"
+inquire = "0.7.5"
