@@ -1,3 +1,4 @@
+use crate::rust::Rust;
 use std::process::Output;
 use std::{path::PathBuf, process::Command};
 use tempfile::{Builder, NamedTempFile};
@@ -35,14 +36,11 @@ impl Playground {
 
     fn get_executable_file_path(playground_file: &NamedTempFile) -> PathBuf {
         let playground_file_path = playground_file.path();
-        let executable_file_path = format!("{}-out", playground_file_path.to_str().unwrap());
+        let executable_file_path =
+            PathBuf::from(format!("{}-out", playground_file_path.to_str().unwrap()));
 
-        Command::new("rustc")
-            .arg(&playground_file_path)
-            .args(["-o", executable_file_path.as_str()])
-            .status()
-            .unwrap();
+        Rust::compile(&playground_file_path, &executable_file_path);
 
-        PathBuf::from(executable_file_path)
+        executable_file_path
     }
 }
