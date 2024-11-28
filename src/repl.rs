@@ -1,64 +1,37 @@
-use crate::playground::Playground;
-use crate::repl::OutputKind::{COMMAND, STATEMENT};
-use std::process::Command;
+use crate::console::Console;
+use crate::prompt::Prompt;
+use crate::rust::Rust;
 
-pub enum OutputKind {
-    COMMAND(String),
-    STATEMENT(String),
-}
-
-pub struct Repl {
-    playground: Playground,
-}
-
-fn get_rust_version() -> String {
-    let output = Command::new("rustc")
-        .arg("--version")
-        .output()
-        .expect("Failed to execute command");
-
-    if output.status.success() {
-        std::str::from_utf8(&output.stdout)
-            .unwrap()
-            .trim()
-            .to_string()
-    } else {
-        "Failed to get Rust version".to_string()
-    }
-}
+pub struct Repl;
 
 impl Repl {
-    pub fn new() -> Self {
-        println!("Welcome to {}.", get_rust_version());
-        println!("Type \".help\" for more information.");
+    pub fn run() {
+        Console::clear();
 
-        Repl {
-            playground: Playground::new(),
-        }
-    }
+        Self::print_welcome_message();
 
-    pub fn exec(&self, input: &str) -> Result<OutputKind, String> {
-        match input {
-            ".help" => {
-                Ok(STATEMENT("The REPL has some special commands, all starting with a dot. They are
-                .help: shows the dot commands help
-                .editor: enables editor mode, to write multiline Rust code with ease. Once you are in this mode, enter ctrl-D to run the code you wrote.
-                .exit: exits the repl".to_string()))
+        loop {
+            let input = Prompt::input();
+
+            if input.eq(".exit") {
+                break;
+            } else if input.eq(".help") {
+                Self::print_help_message();
+            } else {
+                Rust::run(&input);
             }
-
-            ".exit" => Ok(COMMAND("exit".to_string())),
-
-            _ => {
-                let output= self.playground.run(&input)?.to_string();
-
-                Ok(STATEMENT(output))
-            },
         }
     }
-}
 
-impl Drop for Repl {
-    fn drop(&mut self) {
-        println!("Goodbye!");
+    fn print_help_message() {
+        println!("The REPL has some special commands, all starting with a dot. They are
+        .help: shows the dot commands help
+        .editor: enables editor mode, to write multiline Rust code with ease. Once you are in this mode, enter ctrl-D to run the code you wrote.
+        .exit: exits the repl");
+    }
+
+    fn print_welcome_message() {
+        println!("Welcome to {}", Rust::get_version());
+        println!("Type \".help\" for more information.");
     }
 }

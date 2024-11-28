@@ -1,63 +1,48 @@
-use std::process::{Command, Output};
+use std::process::Output;
+use std::{path::PathBuf, process::Command};
 use tempfile::{Builder, NamedTempFile};
 
-pub struct Playground {
-    playground_file: NamedTempFile,
-    executable_path: String,
-}
+pub struct Playground;
 
 impl Playground {
-    pub fn new() -> Self {
-        let playground_file = Builder::new().prefix("rs-repl-").tempfile().unwrap();
-        let executable_path = format!(
-            "{}-out",
-            playground_file.path().to_str().unwrap().to_string()
-        );
+    pub fn run(buffer: &str) {
+        let playground_file = Self::get_playground_file(buffer);
+        let executable_file_path = Self::get_executable_file_path(&playground_file);
 
-        Self {
-            playground_file,
-            executable_path,
-        }
+        let output = Command::new(executable_file_path).output().unwrap();
+
+        Self::display_output(&output);
     }
 
-    pub fn run(&self, buffer: &str) -> Result<String, String> {
-        self.initiate(&buffer);
-        self.format();
-        self.compile();
-
-        let output = self.execute();
-
-        if output.status.success() {
-            Ok(String::from_utf8_lossy(&output.stdout).to_string())
+    fn display_output(output: &Output) {
+        let content = if output.status.success() {
+            String::from_utf8_lossy(&output.stdout)
         } else {
-            Err(String::from_utf8_lossy(&output.stderr).to_string())
-        }
+            String::from_utf8_lossy(&output.stderr)
+        };
+
+        println!("{}", content);
     }
 
-    fn initiate(&self, buffer: &str) {
-        std::fs::write(
-            &self.playground_file,
-            "fn main() { %temp% }".replace("%temp%", &buffer),
-        )
-        .unwrap();
+    fn get_playground_file(buffer: &str) -> NamedTempFile {
+        let file_buffer = format!("fn main() {{\n{}\n}}", buffer); // Add buffer to the stub code
+        let playground_file = Builder::new().prefix("rust-repl-").tempfile().unwrap();
+
+        std::fs::write(&playground_file, file_buffer).unwrap();
+
+        playground_file
     }
 
-    fn format(&self) {
-        Command::new("rustfmt")
-            .arg(&self.playground_file.path())
-            .output()
-            .unwrap();
-    }
+    fn get_executable_file_path(playground_file: &NamedTempFile) -> PathBuf {
+        let playground_file_path = playground_file.path();
+        let executable_file_path = format!("{}-out", playground_file_path.to_str().unwrap());
 
-    fn compile(&self) {
         Command::new("rustc")
-            .arg(&self.playground_file.path())
-            .args(["-o", self.executable_path.as_str()])
+            .arg(&playground_file_path)
+            .args(["-o", executable_file_path.as_str()])
             .status()
             .unwrap();
-    }
 
-    fn execute(&self) -> Output {
-        Command::new(&self.executable_path).output().unwrap()
+        PathBuf::from(executable_file_path)
     }
 }
