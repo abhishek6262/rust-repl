@@ -46,7 +46,7 @@ After building and running Rust REPL, you can use the following commands:
 Simply type your Rust code and press Enter to execute it. For example:
 
 ```rust
-> println!("Hello, world!");
+? : println!("Hello, world!");
 Hello, world!
 ```
 
@@ -55,7 +55,7 @@ Hello, world!
 - **.help**: Displays help information about special commands.
 
   ```rust
-  > .help
+  ? : .help
   The REPL has some special commands, all starting with a dot. They are
   .help: shows the dot commands help
   .editor: enables editor mode, to write multiline Rust code with ease. Once you are in this mode, enter ctrl-D to run the code you wrote.
@@ -65,7 +65,7 @@ Hello, world!
 - **.exit**: Exits the REPL.
 
   ```rust
-  > .exit
+  ? : .exit
   Goodbye!
   ```
 
