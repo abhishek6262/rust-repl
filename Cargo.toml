@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 tempfile = "3.14.0"
-inquire = "0.7.5"
+inquire = { version = "0.7.5", features = ["editor"] }
