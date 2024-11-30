@@ -1,4 +1,3 @@
-use crate::playground::Playground;
 use std::path::Path;
 use std::process::Command;
 
@@ -23,9 +22,5 @@ impl Rust {
             .args(["-o", output_file_path.to_str().unwrap()])
             .status()
             .unwrap();
-    }
-
-    pub fn run(buffer: &str) {
-        Playground::run(&buffer);
     }
 }
