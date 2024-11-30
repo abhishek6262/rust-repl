@@ -1,37 +1,53 @@
 use crate::console::Console;
+use crate::enums::EditorMode;
+use crate::message::Message;
+use crate::playground::Playground;
 use crate::prompt::Prompt;
-use crate::rust::Rust;
+use crate::stub::Stub;
 
-pub struct Repl;
+pub struct Repl {
+    mode: EditorMode,
+}
 
 impl Repl {
-    pub fn run() {
-        Console::clear();
-
-        Self::print_welcome_message();
-
-        loop {
-            let input = Prompt::input();
-
-            if input.eq(".exit") {
-                break;
-            } else if input.eq(".help") {
-                Self::print_help_message();
-            } else {
-                Rust::run(&input);
-            }
+    pub fn new() -> Self {
+        Self {
+            mode: EditorMode::STANDARD,
         }
     }
 
-    fn print_help_message() {
-        println!("The REPL has some special commands, all starting with a dot. They are
-        .help: shows the dot commands help
-        .editor: enables editor mode, to write multiline Rust code with ease. Once you are in this mode, enter ctrl-D to run the code you wrote.
-        .exit: exits the repl");
+    fn set_editor_mode(&mut self, mode: EditorMode) {
+        self.mode = mode;
     }
 
-    fn print_welcome_message() {
-        println!("Welcome to {}", Rust::get_version());
-        println!("Type \".help\" for more information.");
+    pub fn run(&mut self) {
+        Console::clear();
+
+        Message::print_welcome();
+
+        loop {
+            let input = Prompt::input(&self.mode);
+
+            match input.as_str() {
+                ".exit" => break,
+                ".help" => Message::print_help(),
+                ".editor" => self.set_editor_mode(EditorMode::EDITOR),
+                _ => {
+                    let buffer = match self.mode {
+                        EditorMode::STANDARD => Stub::new(&input),
+                        EditorMode::EDITOR => {
+                            // Reset the editor mode to standard after buffer execution.
+                            if let EditorMode::EDITOR = self.mode {
+                                self.mode = EditorMode::STANDARD;
+                            }
+
+                            input
+                        }
+                    };
+
+                    Playground::run(&buffer);
+                }
+            }
+        }
     }
 }

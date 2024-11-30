@@ -26,10 +26,9 @@ impl Playground {
     }
 
     fn get_playground_file(buffer: &str) -> NamedTempFile {
-        let file_buffer = format!("fn main() {{\n{}\n}}", buffer); // Add buffer to the stub code
         let playground_file = Builder::new().prefix("rust-repl-").tempfile().unwrap();
 
-        std::fs::write(&playground_file, file_buffer).unwrap();
+        std::fs::write(&playground_file, buffer).unwrap();
 
         playground_file
     }
